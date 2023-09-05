@@ -62,7 +62,8 @@ for search in range(terms+1):
 
         # 스크래핑을 위한 데이터프레임 및 변수 생성
         news_df = pd.DataFrame(columns=['Timestamp', 'Press', 'Title', 'URL'])
-        news_index = news_df.shape[0]
+        news_df_for = pd.DataFrame(columns=['Timestamp', 'Press', 'Title', 'URL'])
+        news_index = news_df_for.shape[0]
         now = datetime.datetime.now()
         timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -109,7 +110,7 @@ for search in range(terms+1):
                 press = driver.find_element(By.CSS_SELECTOR, '#sp_nws{} > div > div > div.news_info > div.info_group > a'.format(scrap)).text
                 title = driver.find_element(By.CSS_SELECTOR, '#sp_nws{} > div > div > a'.format(scrap)).text
                 url = driver.find_element(By.CSS_SELECTOR, '#sp_nws{} > div > div > a'.format(scrap)).get_attribute("href")
-                news_df.loc[news_index] = [timestamp, press, title, url]
+                news_df_for.loc[news_index] = [timestamp, press, title, url]
                 news_index += 1
                 news += 1
             # 여기까지가 10개씩 뉴스긁기
@@ -136,10 +137,8 @@ for search in range(terms+1):
         #######################################################
         ###################### 파일 저장 #######################
         #######################################################
+        news_df = pd.concat([news_df, news_df_for], axis=0)
 
-        # 스크래핑한 뉴스의 제목과 URL을 엑셀 파일로 저장
-        file += 1
-        news_df.to_excel('news{}{}.xlsx'.format(search_date_plain, file), index=False)
         # 다음 스크래핑 시작을 위해 현재 페이지 URL 프린트
         driver.quit()
 
@@ -158,5 +157,10 @@ for search in range(terms+1):
     search += 1
     # date = date + datetime.timedelta(days=next_days)
     date_start = date_start + datetime.timedelta(days=plus)
+
+# 스크래핑한 뉴스의 제목과 URL을 엑셀 파일로 저장
+news_df.to_excel('news.xlsx', index=False)
+# file += 1
+# news_df.to_excel('news{}{}.xlsx'.format(search_date_plain, file), index=False)
 
 print('스크랩이 모두 종료되었습니다.')
